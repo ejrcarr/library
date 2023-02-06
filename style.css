@@ -1,0 +1,179 @@
+:root {
+    --box-shadow: inset 0 0 0 1px #dedddc, 0 0 16px 0 rgb(0 0 0 / 15%);
+}
+
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+body {
+    background-color: rgb(245, 245, 245);
+    min-height: 100vh;
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+}
+
+.flex-horizontal {
+    display: flex;
+    align-items: center;
+}
+
+.main-header {
+    background-color: white;
+    justify-content: space-evenly;
+    padding: 1rem 2rem;
+    box-shadow: inset 0 0 0 1px #dedddc, 0 0 16px 0 rgb(0 0 0 / 20%);
+}
+
+.logo-text {
+    padding-left: .5rem;
+    font-size: clamp(1.5rem, 2.5vw,2rem);
+    font-weight: 100;
+}
+
+.logo-text span {
+    font-weight: 800;
+}
+
+svg {
+    width: clamp(50px, 5vw, 60px);
+}
+
+.search-wrapper {
+    position: relative;
+    width: 40%;
+}
+
+/* clears the 'X' from Internet Explorer */
+input[type=search]::-ms-clear {  display: none; width : 0; height: 0; }
+input[type=search]::-ms-reveal {  display: none; width : 0; height: 0; }
+
+/* clears the 'X' from Chrome */
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration { display: none; }
+
+.search-wrapper input[type='search'] {
+    appearance: none;
+    outline: none;
+    border-radius: 10px;
+    padding: .5rem 1rem;
+    font-size: 1rem;
+    height: clamp(1.75rem, 3vw, 2rem);
+    width: 100%;
+}
+
+.search-icon {
+    position: absolute;
+    right: -7px;
+    height: 85%;
+}
+
+.save-buttons {
+    gap: 1rem;
+    font-size: 1.75rem;
+}
+
+.login-button {
+    height: 100%;
+}
+
+.login-button a {
+    font-size: 1.1rem;
+    text-decoration: none;
+    color: black;
+}
+
+#sign-up {
+    background: none;
+    outline: none;
+    border: none;
+    box-shadow: inset 0 0 0 3px black;
+    padding: .5rem 1rem;
+    font-size: 1.20rem;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+#sign-up:hover {
+    transition: all 200ms ease-in-out;
+    box-shadow: none;
+    color: white;
+    background: black;
+}
+
+.options-container {
+    display: grid;
+    grid-template-columns: .25fr 1fr .25fr;
+    padding: 2rem 10%;
+    gap: 1rem;
+}
+
+.options-container input {
+    appearance: none;
+    display: none;
+}
+
+input[type='checkbox'] + label {
+    padding: .5rem 1rem;
+    border-radius: 10px;
+    background-color: white;
+    box-shadow: var(--box-shadow);
+    cursor: pointer;
+}
+
+.genre-container {
+    gap: 1rem;
+    grid-column: 2 / 3;
+    align-content: center;
+    justify-content: center;
+}
+
+.other-genre-container {
+    gap: .25rem;
+    padding: 0 1rem;
+    border-left: 2px solid black;
+    flex-wrap: wrap;
+}
+
+#add-genre {
+    background: none;
+    border: none;
+    cursor: pointer;
+    height: fit-content;
+    margin-left: -10px;
+}
+
+#add-genre svg{
+    height: 20px;
+}
+
+.options-container input:checked + label {
+    background: black;
+    color: white;
+}
+
+#add-book {
+    grid-column: 3 / 4;
+    align-self: center;
+    justify-self: end;
+    font-size: 1.25rem;
+    padding: .5rem 1rem;
+    border-radius: 10px;
+    border: none;
+    background: black;
+    color: white;
+    cursor: pointer;
+    width: fit-content;
+    height: fit-content;
+}
+
+@media screen and (max-width: 750px) {
+    .search-wrapper {
+        display: none;
+    }
+}

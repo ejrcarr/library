@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="./app.js"></script>
+    <link rel="shortcut icon" href="./favicon.jpg" type="image/x-icon">
+    <script src="./app.js" defer></script>
     <link rel="stylesheet" href="style.css">
-    <title>Library</title>
+    <title>ShelfLife | Home</title>
 </head>
 <body>
     <!-- Genres, read/haven't read, cover of book?, section for notes?, rating -->
@@ -47,6 +48,41 @@
         </div>
         
         <button type="button" id="add-book">Add book</button>
+    </div>
+    <div class="books-container" id="books">
+
+    </div>
+    <div class="add-modal-container" id="add-book-modal">
+        <div class="add-content">
+            <h2>Book Information</h2>
+            <form class="book-form" id="form">
+                <div class="input-container">
+                    <div class="title-wrapper">
+                        <label for="title">Title: </label>
+                        <input type="text" name="title" id="title" required>
+                    </div>
+                    <div class="authors-wrapper">
+                        <label for="authors">Author(s): </label>
+                        <input type="text" name="authors" id="authors" required>
+                    </div>
+                    <div class="pages-wrapper">
+                        <label for="pages">Pages: </label>
+                        <input type="number" name="pages" id="pages" required>
+                    </div>
+                    <fieldset class="has-read">
+                        <p>Have you read the book? </p>
+                            <input type="radio" name="has-read" id="yes-read" checked>
+                            <label for="yes-read">Yes</label>
+                            <input type="radio" name="has-read" id="no-read">
+                            <label for="no-read">No</label>
+                    </fieldset>
+                </div>
+                <button type="submit" class="submit-info" id="submit-info">Done</button>
+            </form>
+            <button type="button" class="close-modal" id="close-modal">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>close</title><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" /></svg>
+            </button>
+        </div>
     </div>
 </body>
 </html>

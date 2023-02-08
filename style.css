@@ -1,5 +1,13 @@
 :root {
+    --primary-color: white;
+    --secondary-color: black;
+    --primary-different-shade: rgb(245, 245, 245);
     --box-shadow: inset 0 0 0 1px #dedddc, 0 0 16px 0 rgb(0 0 0 / 15%);
+    --box-shadow-harder: inset 0 0 0 1px #dedddc, 0 0 16px 0 rgb(0 0 0 / 20%);
+    --theme-toggle-box-shadow: inset 0 0 8px 2px rgba(0, 0, 0, .1),
+                               inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+    --hover-options: rgb(245, 245, 245);
+    --hover-add-more: rgb(219, 219, 219);
 }
 
 *, *::before, *::after {
@@ -7,11 +15,23 @@
     padding: 0;
     box-sizing: border-box;
     font-family: inherit;
+    transition: background 150ms ease-in-out, color 50ms ease-in-out;
+}
+
+.darkmode {
+    --primary-color: rgb(19, 19, 19);
+    --secondary-color: white;
+    --primary-different-shade: rgb(40, 40, 40);
+    --box-shadow-harder: inset 0 0 0 1px #131313, 0 0 16px 0 rgb(0 0 0 / 50%);;
+    --theme-toggle-box-shadow: inset 0 0 8px 2px rgba(255, 255, 255, .1),
+                               inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    --hover-options: rgb(50, 50, 50);
+    --hover-add-more: rgb(92, 92, 92);
 }
 
 body {
     position: relative;
-    background-color: rgb(245, 245, 245);
+    background-color: var(--primary-different-shade);
     min-height: 100vh;
     font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
 }
@@ -22,16 +42,17 @@ body {
 }
 
 .main-header {
-    background-color: white;
+    background-color: var(--primary-color);
     justify-content: space-evenly;
     padding: 1rem 2rem;
-    box-shadow: inset 0 0 0 1px #dedddc, 0 0 16px 0 rgb(0 0 0 / 20%);
+    box-shadow: var(--box-shadow-harder);
 }
 
 .logo-text {
     padding-left: .5rem;
     font-size: clamp(1.5rem, 2.5vw,2rem);
     font-weight: 100;
+    color: var(--secondary-color);
 }
 
 .logo-text span {
@@ -40,6 +61,69 @@ body {
 
 svg {
     width: clamp(50px, 5vw, 60px);
+    fill: var(--secondary-color);
+}
+
+.theme-toggle {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: center;
+    align-items: center;
+    font-size: 1rem;
+    width: 4.75rem;
+    height: 3rem;
+    gap: .25rem;
+    color: var(--secondary-color);
+}
+
+#theme + p {
+    position: relative;
+    width: 100%;
+}
+
+#theme + p::after {
+    position: absolute;
+    right: 3px;
+    content: '☼';
+    font-size: 1.1rem;
+}
+
+#theme:checked + p::after {
+    content: '◐';
+    top: -3px;
+    right: 2px;
+}
+
+#theme {
+    --theme-height: 1.25rem;
+    appearance: none;
+    position: relative;
+    height: var(--theme-height);
+    width: 3rem;
+    border-radius: 15px;
+    cursor: pointer;
+    box-shadow: var(--theme-toggle-box-shadow);
+}
+
+#theme:checked {
+    transition: all 250ms ease-in-out;
+}
+
+#theme::before {
+    content: '';
+    position: absolute;
+    height: var(--theme-height);
+    width: var(--theme-height);
+    scale: .9;
+    right: 1px;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .2);
+    background: linear-gradient(to bottom, white, white);
+    transition: .5s;
+}
+
+#theme:checked::before {
+    transform: translateX(-30px);
 }
 
 .search-wrapper {
@@ -65,12 +149,17 @@ input[type="search"]::-webkit-search-results-decoration { display: none; }
     font-size: 1rem;
     height: clamp(1.75rem, 3vw, 2rem);
     width: 100%;
+    background: transparent;
+    border: none;
+    color: var(--secondary-color);
+    box-shadow: inset 0 0 0 1.5px var(--secondary-color);
 }
 
 .search-icon {
     position: absolute;
     right: -7px;
     height: 85%;
+    fill: var(--secondary-color);
 }
 
 .save-buttons {
@@ -78,33 +167,24 @@ input[type="search"]::-webkit-search-results-decoration { display: none; }
     font-size: 1.75rem;
 }
 
-.login-button {
-    height: 100%;
-}
-
-.login-button a {
-    font-size: 1.1rem;
-    text-decoration: none;
-    color: black;
-}
-
 #sign-up {
     background: none;
     outline: none;
     border: none;
-    box-shadow: inset 0 0 0 3px black;
+    box-shadow: inset 0 0 0 3px var(--secondary-color);
     padding: .5rem 1rem;
     font-size: 1.20rem;
     border-radius: 10px;
     cursor: pointer;
     font-weight: 600;
+    color: var(--secondary-color);
 }
 
 #sign-up:hover {
     transition: all 200ms ease-in-out;
     box-shadow: none;
-    color: white;
-    background: black;
+    color: var(--primary-color);
+    background: var(--secondary-color);
 }
 
 .options-container {
@@ -115,14 +195,15 @@ input[type="search"]::-webkit-search-results-decoration { display: none; }
 }
 
 .options-container input {
+    position: absolute;
     appearance: none;
-    display: none;
 }
 
-input[type='checkbox'] + label {
+.options-container input[type='checkbox'] + label {
     padding: .5rem 1rem;
     border-radius: 10px;
-    background-color: white;
+    background-color: var(--primary-color);
+    color: var(--secondary-color);
     box-shadow: var(--box-shadow);
     cursor: pointer;
 }
@@ -137,7 +218,7 @@ input[type='checkbox'] + label {
 .other-genre-container {
     gap: .25rem;
     padding: 0 1rem;
-    border-left: 2px solid black;
+    border-left: 2px solid var(--secondary-color);
     flex-wrap: wrap;
 }
 
@@ -145,17 +226,27 @@ input[type='checkbox'] + label {
     background: none;
     border: none;
     cursor: pointer;
-    height: fit-content;
-    margin-left: -10px;
+    height: 2rem;
+    width: 2rem;
+    border-radius: 50%;
+}
+
+#add-genre:hover {
+    background: var(--hover-add-more);
 }
 
 #add-genre svg{
-    height: 20px;
+    width: 1.25rem;
+    margin-top: 5px;
 }
 
 .options-container input:checked + label {
-    background: black;
-    color: white;
+    background: var(--secondary-color);
+    color: var(--primary-color);
+}
+
+.options-container input:focus + label {
+    box-shadow: inset 0 0 0 1px blue;
 }
 
 #add-book {
@@ -166,8 +257,8 @@ input[type='checkbox'] + label {
     padding: .5rem 1rem;
     border-radius: 10px;
     border: none;
-    background: black;
-    color: white;
+    background: var(--secondary-color);
+    color: var(--primary-color);
     cursor: pointer;
     width: fit-content;
     height: fit-content;
@@ -185,9 +276,10 @@ input[type='checkbox'] + label {
     display: grid;
     grid-template-rows: repeat(auto-fill, 1fr);
     border-radius: 10px;
-    background: white;
+    background: var(--primary-color);
     box-shadow: var(--box-shadow);
     padding: 2rem;
+    color: var(--secondary-color);
     /* z-index: 1; */
 }
 
@@ -207,6 +299,7 @@ input[type='checkbox'] + label {
     border-radius: 50%;
     padding: 5px;
     cursor: pointer;
+    fill: var(--secondary-color);
 }
 
 .book-title {
@@ -214,7 +307,8 @@ input[type='checkbox'] + label {
 }
 
 .book svg:hover {
-    background:rgb(245, 245, 245);
+    transition: 0s;
+    background:var(--hover-options);
 }
 
 .delete-book {
@@ -231,10 +325,9 @@ input[type='checkbox'] + label {
     left: -4px;
     width: 120px;
     padding: .25rem .5rem;
-    background: white;
-    border: 1px solid black;
+    background: var(--primary-color);
+    border: 1px solid var(--secondary-color);
     z-index: 2;
-
     appearance: none;
     opacity: 0;
     pointer-events: none;
@@ -244,15 +337,15 @@ input[type='checkbox'] + label {
     content: '';
     position: absolute;
     display: block;
-    background: white;
+    background: var(--primary-color);
     width: 15px;
     height: 15px;
     bottom: -9px;
     right: 55px;
     margin: 0;
     transform: rotate(45deg);
-    border-bottom: 1px solid black;
-    border-right: 1px solid black;
+    border-bottom: 1px solid var(--secondary-color);
+    border-right: 1px solid var(--secondary-color);
 }
 
 .confirmation-delete button {
@@ -260,15 +353,16 @@ input[type='checkbox'] + label {
     padding: .1rem .2rem;
     border-radius: 5px;
     cursor: pointer;
+    color: var(--secondary-color);
 }
 
 .confirmation-delete button:nth-of-type(2) {
     color: white;
-    background: rgb(183, 0, 0);
+    background: rgb(196, 0, 0);
 }
 
 .confirmation-delete button:nth-of-type(2):hover {
-    background: rgb(219, 0, 0);
+    background: rgb(229, 0, 0);
 }
 
 .open-confirmation {
@@ -298,12 +392,13 @@ input[type='checkbox'] + label {
     position: relative;
     display: grid;
     grid-template-rows: 50px 1fr;
-    background: white;
+    background: var(--primary-color);
     height: 60vh;
     width: clamp(350px, 65vw , 600px);
     padding: 2rem 10%;
     border-radius: 10px;
     box-shadow: var(--box-shadow);
+    color: var(--secondary-color);
 }
 
 .book-form {
@@ -326,11 +421,12 @@ input[type='checkbox'] + label {
     width: auto;
     border: none;
     outline: none;
-    border-bottom: 2px solid black;
+    background: transparent;
+    border-bottom: 2px solid var(--secondary-color);
 }
 
 .input-container input:focus {
-    border-bottom: 3px solid black;
+    border-bottom: 3px solid var(--secondary-color);
 }
 
 .input-container fieldset {
@@ -353,14 +449,14 @@ fieldset input[type='radio'] + label {
 }
 
 fieldset input[type='radio']:checked + label {
-    background: white;
-    color: black;
-    box-shadow: inset 0 0 0 2px black;
+    background: var(--primary-color);
+    color: var(--secondary-color);
+    box-shadow: inset 0 0 0 2px var(--secondary-color);
 }
 
 .submit-info {
-    background: black;
-    color: white;
+    background: var(--secondary-color);
+    color: var(--primary-color);
     border: none;
     border-radius: 10px;
     padding: 1rem 2rem;

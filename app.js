@@ -13,6 +13,7 @@ const yesReadInput = document.getElementById('yes-read');
 const noReadInput = document.getElementById('no-read');
 
 const genreContainer = document.getElementById('other-genre-container');
+const genreCollection = document.querySelector('.genre-collection');
 
 const changeThemeButton = document.getElementById('theme');
 
@@ -37,6 +38,7 @@ form.addEventListener('submit', (e) => {
 	handleBookInfoSubmit();
 });
 
+let currentUniversalBook = { isEditing: false, index: null };
 let myLibrary = [
 	new Book(
 		'Eloquent JavaScript, Third Edition',
@@ -89,6 +91,11 @@ function clearAddBookForm() {
 	bookPagesInput.value = '';
 	yesReadInput.checked = true;
 	noReadInput.checked = false;
+	genreCollection.innerHTML = '';
+	let newAddButton = createButton('add-genre-button', '');
+	newAddButton.id = 'add-genre';
+	newAddButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>Add Genre</title><path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" /></svg>`;
+	genreCollection.appendChild(newAddButton);
 }
 
 function handleBookInfoSubmit() {
@@ -99,9 +106,24 @@ function handleBookInfoSubmit() {
 	let currentGenreCollection = [];
 	let genres = document.querySelectorAll('.genre-collection .genre');
 	genres.forEach((genre) => {
-		currentGenreCollection.push(genre.textContent);
+		currentGenreCollection.unshift(genre.textContent);
 	});
-	console.log(currentGenreCollection);
+	if (currentUniversalBook.isEditing) {
+		myLibrary[currentUniversalBook.index] = new Book(
+			title,
+			author,
+			num_pages,
+			currentGenreCollection,
+			hasRead
+		);
+		console.log(myLibrary[currentUniversalBook.index]);
+		editNthBook(currentUniversalBook.index);
+		closeModal();
+		currentUniversalBook.isEditing = false;
+		currentUniversalBook.index = null;
+		return;
+	}
+
 	let currentBook = new Book(
 		title,
 		author,
@@ -109,9 +131,27 @@ function handleBookInfoSubmit() {
 		currentGenreCollection,
 		hasRead
 	);
-	console.log(currentBook);
 	addBookToLibrary(currentBook);
 	closeModal();
+}
+
+function editNthBook(index) {
+	let currentLibraryBook = myLibrary[index];
+	let currentBook = document.querySelector(`.book:nth-of-type(${index + 1})`);
+	let title = currentBook.querySelector('.book-title');
+	title.textContent = currentLibraryBook.title;
+	let author = currentBook.querySelector('.book-author');
+	author.textContent = 'By: ' + currentLibraryBook.author;
+	let num_pages = currentBook.querySelector('.book-pages');
+	num_pages.textContent = currentLibraryBook.num_pages + ' pages';
+	currentBook.querySelector('.bottom-row').remove();
+
+	let genreList = createGenreList(currentLibraryBook.genreList);
+	let bookIcon = createHasReadButton(currentLibraryBook.read, index);
+	let bottomContainer = createTextElementWithClass('div', 'bottom-row');
+	bottomContainer.appendChild(genreList);
+	bottomContainer.appendChild(bookIcon);
+	currentBook.appendChild(bottomContainer);
 }
 
 function openModal() {
@@ -124,7 +164,6 @@ function closeModal() {
 }
 
 function toggleDarkMode() {
-	console.log('here');
 	let body = document.querySelector('body');
 	body.classList.toggle('darkmode');
 }
@@ -135,7 +174,7 @@ function generateBookOptionIcons(index) {
 	let editButton = createButton('options-edit-button');
 	editButton.innerHTML =
 		'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>pencil</title><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" /></svg>';
-	editButton.addEventListener('click', () => {});
+	editButton.addEventListener('click', () => handleEditButton(index));
 
 	let deleteButton = createButton('delete-book');
 	deleteButton.innerHTML =
@@ -148,6 +187,19 @@ function generateBookOptionIcons(index) {
 	bookOptionsDiv.appendChild(deleteButton);
 	bookOptionsDiv.appendChild(confirmWindow);
 	return bookOptionsDiv;
+}
+
+function handleEditButton(index) {
+	currentUniversalBook.isEditing = true;
+	currentUniversalBook.index = index;
+	let currentBook = myLibrary[index];
+	bookTitleInput.value = currentBook.title;
+	bookAuthorInput.value = currentBook.author;
+	bookPagesInput.value = currentBook.num_pages;
+	yesReadInput.checked = currentBook.read;
+	noReadInput.checked = !currentBook.read;
+	generateGenreListFromArray(currentBook.genreList);
+	openModal();
 }
 
 function closeConfirmationWindow() {
@@ -200,7 +252,7 @@ function resetLibraryDisplay() {
 	});
 }
 
-function createTextElementWithClass(element, classname = '', message) {
+function createTextElementWithClass(element, classname, message = '') {
 	let currentElement = document.createElement(element);
 	currentElement.classList.add(classname);
 	currentElement.textContent = message;
@@ -219,36 +271,66 @@ function createBookDisplay(book, index) {
 	let bookContainer = document.createElement('div');
 	bookContainer.classList.add('book');
 
+	let titleAndAuthorContainer = document.createElement('div');
+	titleAndAuthorContainer.classList.add('title-and-author');
 	let titleH1 = createTextElementWithClass('h1', 'book-title', book.title);
 	let authorP = createTextElementWithClass(
 		'p',
 		'book-author',
 		'By: ' + book.author
 	);
+	titleAndAuthorContainer.appendChild(titleH1);
+	titleAndAuthorContainer.appendChild(authorP);
 	let pagesP = createTextElementWithClass(
 		'p',
 		'book-pages',
 		book.num_pages + ' pages'
 	);
-	let hasReadP = createTextElementWithClass(
-		'p',
-		'book-read',
-		'Read? ' + book.read
-	);
-
 	let bookOptionsDiv = generateBookOptionIcons(index);
 	let genreList = createGenreList(book.genreList);
-	bookContainer.appendChild(titleH1);
-	bookContainer.appendChild(authorP);
+	let hasReadButton = createHasReadButton(book.read, index);
+	let bottomContainer = createTextElementWithClass('div', 'bottom-row');
+	bottomContainer.appendChild(genreList);
+	bottomContainer.appendChild(hasReadButton);
+	bookContainer.appendChild(titleAndAuthorContainer);
 	bookContainer.appendChild(pagesP);
-	bookContainer.appendChild(hasReadP);
-	bookContainer.appendChild(genreList);
+	bookContainer.appendChild(bottomContainer);
 	bookContainer.appendChild(bookOptionsDiv);
 	booksContainer.appendChild(bookContainer);
 	bookContainer.classList.add('added');
 	setTimeout(() => {
 		bookContainer.classList.remove('added');
 	}, 250);
+}
+
+function createHasReadButton(hasRead, index) {
+	let buttonContainer = createButton('has-read-button');
+	if (hasRead) {
+		buttonContainer.innerHTML = `Read<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>book-open</title><path d="M13,12H20V13.5H13M13,9.5H20V11H13M13,14.5H20V16H13M21,4H3A2,2 0 0,0 1,6V19A2,2 0 0,0 3,21H21A2,2 0 0,0 23,19V6A2,2 0 0,0 21,4M21,19H12V6H21" /></svg>`;
+	} else {
+		buttonContainer.innerHTML = `Not Read<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>book</title><path d="M18,22A2,2 0 0,0 20,20V4C20,2.89 19.1,2 18,2H12V9L9.5,7.5L7,9V2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18Z" /></svg>`;
+	}
+	buttonContainer.addEventListener('click', () => {
+		myLibrary[index].read = !myLibrary[index].read;
+		if (myLibrary[index].read) {
+			buttonContainer.innerHTML = `Read<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>book-open</title><path d="M13,12H20V13.5H13M13,9.5H20V11H13M13,14.5H20V16H13M21,4H3A2,2 0 0,0 1,6V19A2,2 0 0,0 3,21H21A2,2 0 0,0 23,19V6A2,2 0 0,0 21,4M21,19H12V6H21" /></svg>`;
+		} else {
+			buttonContainer.innerHTML = `Not Read<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>book</title><path d="M18,22A2,2 0 0,0 20,20V4C20,2.89 19.1,2 18,2H12V9L9.5,7.5L7,9V2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18Z" /></svg>`;
+		}
+	});
+	return buttonContainer;
+}
+
+function generateGenreListFromArray(genres) {
+	const addGenreButton = document.getElementById('add-genre');
+	genres.forEach((genre) => {
+		let currentGenreDiv = createTextElementWithClass('div', 'genre', genre);
+		currentGenreDiv.classList.add('flex-horizontal');
+		let removeButton = createButton('remove-genre-button');
+		removeButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" /></svg>`;
+		currentGenreDiv.appendChild(removeButton);
+		genreCollection.insertBefore(currentGenreDiv, addGenreButton);
+	});
 }
 
 function createGenreList(listOfGenres) {

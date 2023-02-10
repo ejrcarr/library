@@ -66,13 +66,14 @@ let myLibrary = [
 	),
 ];
 
-let myGenres = new Set([
-	'Fiction',
-	'Mystery',
-	'Horror',
-	'Non-fiction',
-	'Novel',
-]);
+let potentialGenreRemove = [];
+let allGenres = [];
+myLibrary.forEach((book) => {
+	console.log(book.genreList);
+	allGenres = allGenres.concat(book.genreList);
+});
+
+let myGenres = new Set(allGenres);
 
 function Book(title, author, num_pages, genreList = [], read, img_url = null) {
 	this.title = title;
@@ -101,6 +102,7 @@ function clearAddBookForm() {
 	yesReadInput.checked = true;
 	noReadInput.checked = false;
 	genreCollection.innerHTML = '';
+	potentialGenreRemove = [];
 	let newAddButton = createButton('add-genre-button', '');
 	newAddButton.id = 'add-genre';
 	newAddButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>Add Genre</title><path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" /></svg>`;
@@ -116,13 +118,13 @@ function handleBookInfoSubmit() {
 	let currentGenreCollection = [];
 	let genres = document.querySelectorAll('.genre-collection .genre');
 	genres.forEach((genre) => {
-		if (!myGenres.has(genre)) {
-			myGenres.add(genre.textContent);
-			generateBookGenreOptions();
-		}
 		currentGenreCollection.push(genre.textContent);
 	});
 	if (currentUniversalBook.isEditing) {
+		let currBook = myLibrary[currentUniversalBook.index];
+		let differenceOfGenres = currBook.genreList.filter(
+			(genre) => !currentGenreCollection.includes(genre)
+		);
 		myLibrary[currentUniversalBook.index] = new Book(
 			title,
 			author,
@@ -130,7 +132,10 @@ function handleBookInfoSubmit() {
 			currentGenreCollection,
 			hasRead
 		);
+		allGenres.concat(differenceOfGenres);
+		generateBookGenreOptions();
 		editNthBook(currentUniversalBook.index);
+		removePotentialGenreFromOptions();
 		closeModal();
 		currentUniversalBook.isEditing = false;
 		currentUniversalBook.index = null;
@@ -146,6 +151,14 @@ function handleBookInfoSubmit() {
 	);
 	addBookToLibrary(currentBook);
 	closeModal();
+}
+
+function removePotentialGenreFromOptions() {
+	potentialGenreRemove.forEach((potentialGenre) => {
+		allGenres.splice(allGenres.lastIndexOf(potentialGenre), 1);
+	});
+	potentialGenreRemove = [];
+	generateBookGenreOptions();
 }
 
 function editNthBook(index) {
@@ -255,6 +268,10 @@ function createConfirmationDeleteDiv(index) {
 }
 
 function deleteBookByIndex(index) {
+	myLibrary[index].genreList.forEach((genre) => {
+		allGenres.splice(allGenres.indexOf(genre), 1);
+	});
+	generateBookGenreOptions();
 	myLibrary.splice(index, 1);
 	resetLibraryDisplay();
 }
@@ -362,6 +379,7 @@ function createGenreList(listOfGenres) {
 }
 
 function generateBookGenreOptions() {
+	myGenres = new Set(allGenres);
 	genreContainer.innerHTML = '';
 	myGenres.forEach((genre) => {
 		createGenreOptionsDisplay(genre);
@@ -391,11 +409,12 @@ function createGenreOptionsDisplay(genre) {
 }
 
 function addGenreOption(genre) {
-	myGenres.append(genre);
+	allGenres.push(genre);
 	createGenreOptionsDisplay(genre);
 }
 
 function handleRemoveGenreOption() {
+	potentialGenreRemove.push(this.parentElement.textContent);
 	this.parentElement.remove();
 }
 

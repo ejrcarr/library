@@ -19,7 +19,10 @@ const changeThemeButton = document.getElementById('theme');
 
 changeThemeButton.addEventListener('change', toggleDarkMode);
 
-addBookButton.addEventListener('click', openModal);
+addBookButton.addEventListener('click', () => {
+	openModal();
+	clearAddBookForm();
+});
 closeModalButton.addEventListener('click', closeModal);
 
 checkBoxes.forEach((input) => {
@@ -63,7 +66,13 @@ let myLibrary = [
 	),
 ];
 
-let myGenres = ['Fiction', 'Mystery', 'Horror', 'Non-fiction', 'Novel'];
+let myGenres = new Set([
+	'Fiction',
+	'Mystery',
+	'Horror',
+	'Non-fiction',
+	'Novel',
+]);
 
 function Book(title, author, num_pages, genreList = [], read, img_url = null) {
 	this.title = title;
@@ -95,6 +104,7 @@ function clearAddBookForm() {
 	let newAddButton = createButton('add-genre-button', '');
 	newAddButton.id = 'add-genre';
 	newAddButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>Add Genre</title><path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" /></svg>`;
+	newAddButton.addEventListener('click', handleAddGenreOption);
 	genreCollection.appendChild(newAddButton);
 }
 
@@ -106,7 +116,11 @@ function handleBookInfoSubmit() {
 	let currentGenreCollection = [];
 	let genres = document.querySelectorAll('.genre-collection .genre');
 	genres.forEach((genre) => {
-		currentGenreCollection.unshift(genre.textContent);
+		if (!myGenres.has(genre)) {
+			myGenres.add(genre.textContent);
+			generateBookGenreOptions();
+		}
+		currentGenreCollection.push(genre.textContent);
 	});
 	if (currentUniversalBook.isEditing) {
 		myLibrary[currentUniversalBook.index] = new Book(
@@ -116,7 +130,6 @@ function handleBookInfoSubmit() {
 			currentGenreCollection,
 			hasRead
 		);
-		console.log(myLibrary[currentUniversalBook.index]);
 		editNthBook(currentUniversalBook.index);
 		closeModal();
 		currentUniversalBook.isEditing = false;
@@ -190,6 +203,7 @@ function generateBookOptionIcons(index) {
 }
 
 function handleEditButton(index) {
+	clearAddBookForm();
 	currentUniversalBook.isEditing = true;
 	currentUniversalBook.index = index;
 	let currentBook = myLibrary[index];
@@ -328,6 +342,7 @@ function generateGenreListFromArray(genres) {
 		currentGenreDiv.classList.add('flex-horizontal');
 		let removeButton = createButton('remove-genre-button');
 		removeButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" /></svg>`;
+		removeButton.addEventListener('click', handleRemoveGenreOption);
 		currentGenreDiv.appendChild(removeButton);
 		genreCollection.insertBefore(currentGenreDiv, addGenreButton);
 	});
@@ -347,6 +362,7 @@ function createGenreList(listOfGenres) {
 }
 
 function generateBookGenreOptions() {
+	genreContainer.innerHTML = '';
 	myGenres.forEach((genre) => {
 		createGenreOptionsDisplay(genre);
 	});
@@ -370,13 +386,81 @@ function createGenreLabel(genre) {
 function createGenreOptionsDisplay(genre) {
 	let genreCheckBox = createGenreCheckbox(genre);
 	let genreLabel = createGenreLabel(genre);
-	genreContainer.insertBefore(genreLabel, genreContainer.firstChild);
-	genreContainer.insertBefore(genreCheckBox, genreContainer.firstChild);
+	genreContainer.appendChild(genreCheckBox);
+	genreContainer.appendChild(genreLabel);
 }
 
 function addGenreOption(genre) {
 	myGenres.append(genre);
 	createGenreOptionsDisplay(genre);
+}
+
+function handleRemoveGenreOption() {
+	this.parentElement.remove();
+}
+
+function handleAddGenreOption() {
+	document.getElementById('add-genre').remove();
+	let addGenreContainer = createTextElementWithClass(
+		'div',
+		'add-genre-container'
+	);
+	addGenreContainer.classList.add('flex-horizontal');
+	let addGenreInput = document.createElement('input');
+	addGenreInput.type = 'text';
+	addGenreInput.name = 'add-genre-input';
+	addGenreInput.id = 'add-genre-input';
+	addGenreInput.addEventListener('keydown', handleEnterInAddGenre);
+	let denyAddButton = createButton('deny-add-genre');
+	denyAddButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>close</title><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" /></svg>`;
+	denyAddButton.addEventListener('click', handleCancelAddGenreButton);
+	let confirmAddButton = createButton('confirm-add-genre');
+	confirmAddButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>check</title><path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" /></svg>`;
+	confirmAddButton.addEventListener('click', handleConfirmAddGenreButton);
+	addGenreContainer.appendChild(addGenreInput);
+	addGenreContainer.appendChild(denyAddButton);
+	addGenreContainer.appendChild(confirmAddButton);
+	genreCollection.appendChild(addGenreContainer);
+	addGenreInput.focus();
+}
+
+function removeAddGenreInput() {
+	genreCollection.querySelector('.add-genre-container').remove();
+}
+
+function addAddGenreButton() {
+	let newAddButton = createButton('add-genre-button', '');
+	newAddButton.id = 'add-genre';
+	newAddButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>Add Genre</title><path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" /></svg>`;
+	newAddButton.addEventListener('click', handleAddGenreOption);
+	genreCollection.appendChild(newAddButton);
+}
+
+function handleCancelAddGenreButton() {
+	removeAddGenreInput();
+	addAddGenreButton();
+}
+
+function handleConfirmAddGenreButton() {
+	let genreInput = document.querySelector('.add-genre-container input');
+	let newGenre = genreInput.value;
+	removeAddGenreInput();
+	addAddGenreButton();
+	let currentGenreDiv = createTextElementWithClass('div', 'genre', newGenre);
+	currentGenreDiv.classList.add('flex-horizontal');
+	let removeButton = createButton('remove-genre-button');
+	removeButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" /></svg>`;
+	removeButton.addEventListener('click', handleRemoveGenreOption);
+	currentGenreDiv.appendChild(removeButton);
+	const addGenreButton = document.getElementById('add-genre');
+	genreCollection.insertBefore(currentGenreDiv, addGenreButton);
+}
+
+function handleEnterInAddGenre(e) {
+	if (e.code == 'Enter') {
+		e.preventDefault();
+		handleConfirmAddGenreButton();
+	}
 }
 
 resetLibraryDisplay();

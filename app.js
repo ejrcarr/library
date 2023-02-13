@@ -5,6 +5,7 @@ const addBookModal = document.getElementById('add-book-modal');
 const submitInfoButton = document.getElementById('submit-info');
 const form = document.getElementById('form');
 const checkBoxes = document.querySelectorAll('input[type="checkbox"]');
+const allFilter = document.getElementById('all');
 
 const bookTitleInput = document.getElementById('title');
 const bookAuthorInput = document.getElementById('authors');
@@ -15,10 +16,16 @@ const noReadInput = document.getElementById('no-read');
 const genreContainer = document.getElementById('other-genre-container');
 const genreCollection = document.querySelector('.genre-collection');
 
+const filterButton = document.getElementById('filters-mobile');
+const filtersDropdown = document.getElementById('filters-dropdown');
+
 const changeThemeButton = document.getElementById('theme');
 
 changeThemeButton.addEventListener('change', toggleDarkMode);
-
+filterButton.addEventListener('click', () => {
+	filtersDropdown.classList.toggle('open-genre-types');
+	filterButton.classList.toggle('open-filters-mobile');
+});
 addBookButton.addEventListener('click', () => {
 	openModal();
 	clearAddBookForm();
@@ -34,6 +41,19 @@ checkBoxes.forEach((input) => {
 			}
 		}
 	});
+});
+
+allFilter.addEventListener('change', () => {
+	if (allFilter.checked) {
+		let checkBoxGenres = document.querySelectorAll(
+			'.other-genre-container input'
+		);
+		for (let checkBox of checkBoxGenres) {
+			checkBox.checked = false;
+		}
+		filterOptions.activeFilters = new Set();
+		resetLibraryDisplay();
+	}
 });
 
 form.addEventListener('submit', (e) => {
@@ -68,12 +88,15 @@ let myLibrary = [
 
 let potentialGenreRemove = [];
 let allGenres = [];
-myLibrary.forEach((book) => {
-	console.log(book.genreList);
-	allGenres = allGenres.concat(book.genreList);
-});
-
+initializeAllGenres();
 let myGenres = new Set(allGenres);
+
+let filterOptions = {
+	isAllChecked: () => {
+		return allFilter.checked;
+	},
+	activeFilters: new Set(),
+};
 
 function Book(title, author, num_pages, genreList = [], read, img_url = null) {
 	this.title = title;
@@ -87,6 +110,16 @@ function Book(title, author, num_pages, genreList = [], read, img_url = null) {
 function addBookToLibrary(book) {
 	myLibrary.push(book);
 	createBookDisplay(book, myLibrary.indexOf(book));
+}
+
+function initializeAllGenres() {
+	myLibrary.forEach((book) => {
+		allGenres = allGenres.concat(book.genreList);
+	});
+}
+
+function updateMyGenres() {
+	myGenres = new Set(allGenres);
 }
 
 function updateBookDisplay() {
@@ -122,8 +155,8 @@ function handleBookInfoSubmit() {
 	});
 	if (currentUniversalBook.isEditing) {
 		let currBook = myLibrary[currentUniversalBook.index];
-		let differenceOfGenres = currBook.genreList.filter(
-			(genre) => !currentGenreCollection.includes(genre)
+		let differenceOfGenres = currentGenreCollection.filter(
+			(genre) => !currBook.genreList.includes(genre)
 		);
 		myLibrary[currentUniversalBook.index] = new Book(
 			title,
@@ -132,16 +165,17 @@ function handleBookInfoSubmit() {
 			currentGenreCollection,
 			hasRead
 		);
-		allGenres.concat(differenceOfGenres);
+		allGenres = allGenres.concat(differenceOfGenres);
+		removePotentialGenreFromOptions();
 		generateBookGenreOptions();
 		editNthBook(currentUniversalBook.index);
-		removePotentialGenreFromOptions();
+		handleFilters();
+		resetCurrentUniversalBook();
 		closeModal();
-		currentUniversalBook.isEditing = false;
-		currentUniversalBook.index = null;
 		return;
 	}
-
+	allGenres = allGenres.concat(currentGenreCollection);
+	generateBookGenreOptions();
 	let currentBook = new Book(
 		title,
 		author,
@@ -157,13 +191,45 @@ function removePotentialGenreFromOptions() {
 	potentialGenreRemove.forEach((potentialGenre) => {
 		allGenres.splice(allGenres.lastIndexOf(potentialGenre), 1);
 	});
+	updateMyGenres();
 	potentialGenreRemove = [];
-	generateBookGenreOptions();
+}
+
+function resetFilterOptions() {
+	console.log('reset');
+	allFilter.checked = true;
+	filterOptions.activeFilters.clear();
+}
+
+function resetCurrentUniversalBook() {
+	currentUniversalBook.isEditing = false;
+	currentUniversalBook.index = null;
+}
+
+function areFiltersActive() {
+	let checkBoxGenres = document.querySelectorAll(
+		'.other-genre-container input'
+	);
+	for (let checkBox of checkBoxGenres) {
+		if (checkBox.checked) {
+			return true;
+		}
+	}
+	return false;
+}
+
+function handleFilters() {
+	if (!areFiltersActive()) {
+		resetFilterOptions();
+	}
+	resetLibraryDisplay();
 }
 
 function editNthBook(index) {
 	let currentLibraryBook = myLibrary[index];
-	let currentBook = document.querySelector(`.book:nth-of-type(${index + 1})`);
+	let currentBook = document.querySelector(
+		`.book[data-index-number='${index}']`
+	);
 	let title = currentBook.querySelector('.book-title');
 	title.textContent = currentLibraryBook.title;
 	let author = currentBook.querySelector('.book-author');
@@ -272,6 +338,7 @@ function deleteBookByIndex(index) {
 		allGenres.splice(allGenres.indexOf(genre), 1);
 	});
 	generateBookGenreOptions();
+	handleFilters();
 	myLibrary.splice(index, 1);
 	resetLibraryDisplay();
 }
@@ -279,7 +346,16 @@ function deleteBookByIndex(index) {
 function resetLibraryDisplay() {
 	booksContainer.innerHTML = '';
 	myLibrary.map((book, index) => {
-		createBookDisplay(book, index);
+		if (!filterOptions.isAllChecked()) {
+			for (let genre of filterOptions.activeFilters) {
+				if (!book.genreList.includes(genre)) {
+					return;
+				}
+			}
+			createBookDisplay(book, index);
+		} else {
+			createBookDisplay(book, index);
+		}
 	});
 }
 
@@ -301,6 +377,7 @@ function createButton(classname = '', message = '') {
 function createBookDisplay(book, index) {
 	let bookContainer = document.createElement('div');
 	bookContainer.classList.add('book');
+	bookContainer.setAttribute('data-index-number', index);
 
 	let titleAndAuthorContainer = document.createElement('div');
 	titleAndAuthorContainer.classList.add('title-and-author');
@@ -379,26 +456,11 @@ function createGenreList(listOfGenres) {
 }
 
 function generateBookGenreOptions() {
-	myGenres = new Set(allGenres);
+	updateMyGenres();
 	genreContainer.innerHTML = '';
 	myGenres.forEach((genre) => {
 		createGenreOptionsDisplay(genre);
 	});
-}
-
-function createGenreCheckbox(genre) {
-	let checkBoxInput = document.createElement('input');
-	checkBoxInput.type = 'checkbox';
-	checkBoxInput.name = genre;
-	checkBoxInput.id = genre;
-	return checkBoxInput;
-}
-
-function createGenreLabel(genre) {
-	let checkBoxLabel = document.createElement('label');
-	checkBoxLabel.setAttribute('for', genre);
-	checkBoxLabel.textContent = genre;
-	return checkBoxLabel;
 }
 
 function createGenreOptionsDisplay(genre) {
@@ -408,9 +470,42 @@ function createGenreOptionsDisplay(genre) {
 	genreContainer.appendChild(genreLabel);
 }
 
-function addGenreOption(genre) {
-	allGenres.push(genre);
-	createGenreOptionsDisplay(genre);
+function createGenreCheckbox(genre) {
+	let checkBoxInput = document.createElement('input');
+	checkBoxInput.type = 'checkbox';
+	checkBoxInput.name = genre;
+	checkBoxInput.id = genre;
+	if (filterOptions.activeFilters.has(genre)) {
+		checkBoxInput.checked = true;
+	}
+	checkBoxInput.addEventListener('change', () => {
+		if (checkBoxInput.checked) {
+			filterOptions.activeFilters.add(checkBoxInput.name);
+		} else {
+			filterOptions.activeFilters.delete(checkBoxInput.name);
+		}
+		let checkBoxGenres = document.querySelectorAll(
+			'.other-genre-container input'
+		);
+		for (let checkBox of checkBoxGenres) {
+			if (checkBox.checked) {
+				allFilter.checked = false;
+				resetLibraryDisplay();
+				return;
+			}
+		}
+		resetLibraryDisplay();
+		allFilter.checked = true;
+	});
+
+	return checkBoxInput;
+}
+
+function createGenreLabel(genre) {
+	let checkBoxLabel = document.createElement('label');
+	checkBoxLabel.setAttribute('for', genre);
+	checkBoxLabel.textContent = genre;
+	return checkBoxLabel;
 }
 
 function handleRemoveGenreOption() {
@@ -463,6 +558,17 @@ function handleCancelAddGenreButton() {
 function handleConfirmAddGenreButton() {
 	let genreInput = document.querySelector('.add-genre-container input');
 	let newGenre = genreInput.value;
+	if (previousGenresHaveGenre(newGenre)) {
+		let warningContainer = createTextElementWithClass(
+			'div',
+			'warning-container',
+			'Already exists.'
+		);
+		let addGenreContainer = document.querySelector('.add-genre-container');
+		addGenreContainer.appendChild(warningContainer);
+		setTimeout(() => warningContainer.remove(), 3000);
+		return;
+	}
 	removeAddGenreInput();
 	addAddGenreButton();
 	let currentGenreDiv = createTextElementWithClass('div', 'genre', newGenre);
@@ -473,6 +579,16 @@ function handleConfirmAddGenreButton() {
 	currentGenreDiv.appendChild(removeButton);
 	const addGenreButton = document.getElementById('add-genre');
 	genreCollection.insertBefore(currentGenreDiv, addGenreButton);
+}
+
+function previousGenresHaveGenre(genre) {
+	let previousGenres = document.querySelectorAll('.genre-collection .genre');
+	for (let previousGenre of previousGenres) {
+		if (previousGenre.textContent == genre) {
+			return true;
+		}
+	}
+	return false;
 }
 
 function handleEnterInAddGenre(e) {

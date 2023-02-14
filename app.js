@@ -6,6 +6,7 @@ const submitInfoButton = document.getElementById('submit-info');
 const form = document.getElementById('form');
 const checkBoxes = document.querySelectorAll('input[type="checkbox"]');
 const allFilter = document.getElementById('all');
+const allFilterLabel = document.getElementById('all-label');
 
 const bookTitleInput = document.getElementById('title');
 const bookAuthorInput = document.getElementById('authors');
@@ -55,13 +56,31 @@ searchButton.addEventListener('click', handleSearch);
 
 checkBoxes.forEach((input) => {
 	input.addEventListener('keypress', (e) => {
-		if (e.code == 'Enter') {
+		console.log(input.id);
+		if (e.code == 'Enter' && input.id != 'all') {
 			input.checked = !input.checked;
 			if (input.id == 'theme') {
 				toggleDarkMode();
 			}
 		}
 	});
+});
+
+allFilterLabel.addEventListener('click', (e) => {
+	e.preventDefault();
+	if (!allFilter.checked) {
+		allFilter.checked = true;
+		searchBar.value = '';
+		searchMobileInput.value = '';
+		let checkBoxGenres = document.querySelectorAll(
+			'.other-genre-container input'
+		);
+		for (let checkBox of checkBoxGenres) {
+			checkBox.checked = false;
+		}
+		filterOptions.activeFilters = new Set();
+		resetLibraryDisplay();
+	}
 });
 
 allFilter.addEventListener('change', () => {

@@ -569,7 +569,8 @@ input[type="search"]::-webkit-search-results-decoration { display: none; }
     display: grid;
     grid-template-rows: 50px 1fr;
     background: var(--primary-color);
-    height: 70vh;
+    height: 600px;
+    /* height: 70vw; */
     width: clamp(350px, 65vw , 600px);
     padding: 2rem 10%;
     border-radius: 10px;

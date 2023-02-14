@@ -5,6 +5,9 @@ const addBookModal = document.getElementById('add-book-modal');
 const submitInfoButton = document.getElementById('submit-info');
 const form = document.getElementById('form');
 const checkBoxes = document.querySelectorAll('input[type="checkbox"]');
+const checkBoxesLabel = document.querySelectorAll(
+	'input[type="checkbox"] + label'
+);
 const allFilter = document.getElementById('all');
 const allFilterLabel = document.getElementById('all-label');
 
@@ -23,6 +26,7 @@ const filtersDropdown = document.getElementById('filters-dropdown');
 
 const searchBar = document.getElementById('searchbar');
 const searchButton = document.getElementById('searchbar-button');
+const cancelSearchButton = document.getElementById('cancel-search');
 
 const searchMobileButton = document.getElementById('search-mobile-button');
 const searchMobileInput = document.getElementById('mobile-search');
@@ -30,6 +34,7 @@ const searchMobileSubmit = document.getElementById('search-mobile-submit');
 
 const changeThemeButton = document.getElementById('theme');
 
+cancelSearchButton.addEventListener('click', handleCancelSearch);
 searchMobileSubmit.addEventListener('click', handleMobileSearch);
 searchMobileButton.addEventListener('click', toggleMobileSearch);
 changeThemeButton.addEventListener('change', toggleDarkMode);
@@ -53,11 +58,18 @@ searchMobileInput.addEventListener('keydown', (e) => {
 	}
 });
 searchButton.addEventListener('click', handleSearch);
+searchBar.addEventListener('input', () => {
+	if (searchBar.value == '') {
+		cancelSearchButton.classList.add('hidden');
+	} else {
+		cancelSearchButton.classList.remove('hidden');
+	}
+});
 
 checkBoxes.forEach((input) => {
 	input.addEventListener('keypress', (e) => {
-		console.log(input.id);
 		if (e.code == 'Enter' && input.id != 'all') {
+			handleCancelSearch();
 			input.checked = !input.checked;
 			if (input.id == 'theme') {
 				toggleDarkMode();
@@ -69,6 +81,7 @@ checkBoxes.forEach((input) => {
 allFilterLabel.addEventListener('click', (e) => {
 	e.preventDefault();
 	if (!allFilter.checked) {
+		handleCancelSearch();
 		allFilter.checked = true;
 		searchBar.value = '';
 		searchMobileInput.value = '';
@@ -104,6 +117,7 @@ form.addEventListener('submit', (e) => {
 let searchBarOptions = {
 	isSearchActive: false,
 	searchBarIndexes: new Set(),
+	searchMessage: null,
 };
 let currentUniversalBook = { isEditing: false, index: null };
 let myLibrary = [
@@ -394,6 +408,9 @@ function resetLibraryDisplay() {
 			if (searchBarOptions.searchBarIndexes.has(index)) {
 				createBookDisplay(book, index);
 			}
+			booksContainer.appendChild(
+				createSearchResultSpan(searchBarOptions.searchMessage)
+			);
 		} else if (!filterOptions.isAllChecked()) {
 			for (let genre of filterOptions.activeFilters) {
 				if (!book.genreList.includes(genre)) {
@@ -528,6 +545,10 @@ function createGenreCheckbox(genre) {
 		checkBoxInput.checked = true;
 	}
 	checkBoxInput.addEventListener('change', () => {
+		resetSearchBarIndexes();
+		searchBar.value = '';
+		searchMobileInput.value = '';
+		cancelSearchButton.classList.add('hidden');
 		if (checkBoxInput.checked) {
 			filterOptions.activeFilters.add(checkBoxInput.name);
 		} else {
@@ -653,7 +674,12 @@ function resetSearchBarIndexes() {
 }
 
 function hardResetFilterOptions() {
+	softResetFilterOptions();
 	allFilter.checked = false;
+}
+
+function softResetFilterOptions() {
+	allFilter.checked = true;
 	let checkBoxGenres = document.querySelectorAll(
 		'.other-genre-container input'
 	);
@@ -668,6 +694,7 @@ function handleSearch() {
 
 	searchBarOptions.isSearchActive = true;
 	let currentText = searchBar.value.trim().toLowerCase();
+	searchBarOptions.searchMessage = currentText;
 	for (const [index, book] of myLibrary.entries()) {
 		if (
 			(book.author.toLowerCase().includes(currentText) ||
@@ -684,6 +711,7 @@ function handleMobileSearch() {
 	hardResetFilterOptions();
 	searchBarOptions.isSearchActive = true;
 	let currentText = searchMobileInput.value.trim().toLowerCase();
+	searchBarOptions.searchMessage = currentText;
 	for (const [index, book] of myLibrary.entries()) {
 		if (
 			(book.author.toLowerCase().includes(currentText) ||
@@ -706,6 +734,22 @@ function toggleMobileSearch() {
 	if (!searchMobileInput.className.includes('hidden-search')) {
 		searchMobileInput.focus();
 	}
+}
+
+function handleCancelSearch() {
+	resetSearchBarIndexes();
+	softResetFilterOptions();
+	resetLibraryDisplay();
+	searchBar.value = '';
+	searchMobileInput.value = '';
+	cancelSearchButton.classList.add('hidden');
+}
+
+function createSearchResultSpan(message) {
+	let span = document.createElement('span');
+	span.classList.add('search-results');
+	span.textContent = `Search result for "${message}"`;
+	return span;
 }
 
 resetLibraryDisplay();

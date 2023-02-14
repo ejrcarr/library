@@ -170,10 +170,27 @@ input[type="search"]::-webkit-search-results-decoration { display: none; }
     cursor: pointer;
 }
 
+.cancel-search {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 85%;
+    right: 20px;
+    top: 3px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.cancel-search svg {
+    height: 80% !important;
+    fill: var(--hover-mobile-search);
+}
+
 .search-icon {
     /* position: absolute;
-    right: -7px; */
-    /* height: 85%; */
+    right: -10px; */
     height: 100%;
     fill: var(--secondary-color);
 }
@@ -308,7 +325,16 @@ input[type="search"]::-webkit-search-results-decoration { display: none; }
     height: fit-content;
 }
 
+.search-results {
+    position: absolute;
+    /* border: 1px solid red; */
+    top: -15px;
+    left: calc(10% + 10px);
+    color: var(--hover-mobile-search);
+}
+
 #books {
+    position: relative;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     grid-auto-rows: minmax(300px, 1fr);
@@ -747,6 +773,12 @@ fieldset input[type='radio']:checked + label {
     pointer-events: none;
 }
 
+.hidden {
+    pointer-events: none !important;
+    opacity: 0 !important;
+    display: none;
+    appearance: none;
+}
 
 @media screen and (max-width: 750px) {
     .search-wrapper {

@@ -327,10 +327,31 @@ input[type="search"]::-webkit-search-results-decoration { display: none; }
 
 .search-results {
     position: absolute;
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
     /* border: 1px solid red; */
     top: -15px;
     left: calc(10% + 10px);
     color: var(--hover-mobile-search);
+}
+
+.search-results .cancel-search-results {
+    background: none;
+    border: none;
+    height: 1.5rem;
+    width: 1.5rem;
+    cursor: pointer;
+}
+
+.cancel-search-results:hover svg {
+    fill: var(--hover-add-more);
+}
+
+.cancel-search-results svg {
+    fill: var(--hover-mobile-search);
+    height: 70%;
+    width: 70%;
 }
 
 #books {

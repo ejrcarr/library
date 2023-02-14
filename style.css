@@ -8,6 +8,7 @@
                                inset 0 0 0 1px rgba(0, 0, 0, 0.1);
     --hover-options: rgb(245, 245, 245);
     --hover-add-more: rgb(219, 219, 219);
+    --hover-mobile-search: rgb(105, 105, 105);
 }
 
 *, *::before, *::after {
@@ -27,6 +28,7 @@
                                inset 0 0 0 1px rgba(255, 255, 255, 0.1);
     --hover-options: rgb(50, 50, 50);
     --hover-add-more: rgb(92, 92, 92);
+    --hover-mobile-search: rgb(200, 200, 200);
 }
 
 body {
@@ -727,30 +729,85 @@ fieldset input[type='radio']:checked + label {
 
 .search-mobile {
     display: none;
-    align-items: center;
-    justify-content: flex-start;
+    pointer-events: none;
 }
 
-.search-mobile-button {
-    padding: .5rem;
-    cursor: pointer;
-    background: transparent;
-    border: none;
-    border-radius: 10px;
-}
-
-.search-mobile-button:hover {
-    background-color: var(--hover-add-more);
+.search-mobile-button:hover svg{
+    fill: var(--hover-mobile-search);
 }
 
 .search-mobile svg {
+    position: relative;
     height: 2.5rem;
+    z-index: 5;
+}
+
+#mobile-search {
+    display: none;
+    pointer-events: none;
 }
 
 
 @media screen and (max-width: 750px) {
     .search-wrapper {
         display: none;
+    }
+
+    .search-mobile {
+        position: relative;
+        display: none;
+        align-items: center;
+        justify-content: flex-start;
+        z-index: 2;
+    }
+
+    .search-mobile-button {
+        position: relative;
+        padding: .5rem;
+        cursor: pointer;
+        background: transparent;
+        border: none;
+        border-radius: 10px;
+        z-index: 10;
+        pointer-events: all;
+    }
+
+    #mobile-search {
+        display: block;
+        position: absolute;
+        z-index: 1;
+        padding: 1rem;
+        padding-left: 4rem;
+        border-radius: 10px;
+        font-size: 1.2rem;
+        width: 80vw;
+        pointer-events: all;
+        grid-column: 0 / 5;
+        transition: all 250ms ease-in-out;
+        color: var(--secondary-color);
+        background: var(--primary-color);
+        border: 2px solid var(--secondary-color);
+    }
+
+    .hidden-search {
+        width: 0 !important;
+        pointer-events: none !important;
+        opacity: 0 !important;
+        transition: all 150ms ease-in-out;
+    }
+
+    .search-mobile-submit {
+        position: absolute;
+        right: -65vw;
+        background: transparent;
+        z-index: 15;
+        cursor: pointer;
+        pointer-events: all;
+        border: none;
+    }
+
+    .search-mobile-submit:hover svg {
+        fill: var(--hover-mobile-search);
     }
 
     .filters-mobile {
@@ -859,5 +916,12 @@ fieldset input[type='radio']:checked + label {
         transition: max-height 200ms ease-in-out;
         overflow-y: scroll;
         border: 2px solid var(--secondary-color);
+    }
+
+    .hidden {
+        pointer-events: none !important;
+        opacity: 0 !important;
+        display: none;
+        appearance: none;
     }
 }

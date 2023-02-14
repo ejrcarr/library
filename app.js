@@ -13,14 +13,24 @@ const bookPagesInput = document.getElementById('pages');
 const yesReadInput = document.getElementById('yes-read');
 const noReadInput = document.getElementById('no-read');
 
+const genreMainContainer = document.querySelector('.genre-container');
 const genreContainer = document.getElementById('other-genre-container');
 const genreCollection = document.querySelector('.genre-collection');
 
 const filterButton = document.getElementById('filters-mobile');
 const filtersDropdown = document.getElementById('filters-dropdown');
 
+const searchBar = document.getElementById('searchbar');
+const searchButton = document.getElementById('searchbar-button');
+
+const searchMobileButton = document.getElementById('search-mobile-button');
+const searchMobileInput = document.getElementById('mobile-search');
+const searchMobileSubmit = document.getElementById('search-mobile-submit');
+
 const changeThemeButton = document.getElementById('theme');
 
+searchMobileSubmit.addEventListener('click', handleMobileSearch);
+searchMobileButton.addEventListener('click', toggleMobileSearch);
 changeThemeButton.addEventListener('change', toggleDarkMode);
 filterButton.addEventListener('click', () => {
 	filtersDropdown.classList.toggle('open-genre-types');
@@ -31,6 +41,17 @@ addBookButton.addEventListener('click', () => {
 	clearAddBookForm();
 });
 closeModalButton.addEventListener('click', closeModal);
+searchBar.addEventListener('keydown', (e) => {
+	if (e.code == 'Enter') {
+		handleSearch();
+	}
+});
+searchMobileInput.addEventListener('keydown', (e) => {
+	if (e.code == 'Enter') {
+		handleMobileSearch();
+	}
+});
+searchButton.addEventListener('click', handleSearch);
 
 checkBoxes.forEach((input) => {
 	input.addEventListener('keypress', (e) => {
@@ -61,6 +82,10 @@ form.addEventListener('submit', (e) => {
 	handleBookInfoSubmit();
 });
 
+let searchBarOptions = {
+	isSearchActive: false,
+	searchBarIndexes: new Set(),
+};
 let currentUniversalBook = { isEditing: false, index: null };
 let myLibrary = [
 	new Book(
@@ -196,7 +221,6 @@ function removePotentialGenreFromOptions() {
 }
 
 function resetFilterOptions() {
-	console.log('reset');
 	allFilter.checked = true;
 	filterOptions.activeFilters.clear();
 }
@@ -346,7 +370,12 @@ function deleteBookByIndex(index) {
 function resetLibraryDisplay() {
 	booksContainer.innerHTML = '';
 	myLibrary.map((book, index) => {
-		if (!filterOptions.isAllChecked()) {
+		console.log(book);
+		if (searchBarOptions.isSearchActive != 0) {
+			if (searchBarOptions.searchBarIndexes.has(index)) {
+				createBookDisplay(book, index);
+			}
+		} else if (!filterOptions.isAllChecked()) {
 			for (let genre of filterOptions.activeFilters) {
 				if (!book.genreList.includes(genre)) {
 					return;
@@ -357,6 +386,7 @@ function resetLibraryDisplay() {
 			createBookDisplay(book, index);
 		}
 	});
+	resetSearchBarIndexes();
 }
 
 function createTextElementWithClass(element, classname, message = '') {
@@ -595,6 +625,67 @@ function handleEnterInAddGenre(e) {
 	if (e.code == 'Enter') {
 		e.preventDefault();
 		handleConfirmAddGenreButton();
+	}
+}
+
+function resetSearchBarIndexes() {
+	searchBarOptions.isSearchActive = false;
+	searchBarOptions.searchBarIndexes.clear();
+}
+
+function hardResetFilterOptions() {
+	allFilter.checked = false;
+	let checkBoxGenres = document.querySelectorAll(
+		'.other-genre-container input'
+	);
+	for (let checkBox of checkBoxGenres) {
+		checkBox.checked = false;
+	}
+	filterOptions.activeFilters = new Set();
+}
+
+function handleSearch() {
+	hardResetFilterOptions();
+
+	searchBarOptions.isSearchActive = true;
+	let currentText = searchBar.value.trim().toLowerCase();
+	for (const [index, book] of myLibrary.entries()) {
+		if (
+			(book.author.toLowerCase().includes(currentText) ||
+				book.title.toLowerCase().includes(currentText)) &&
+			!searchBarOptions.searchBarIndexes.has(index)
+		) {
+			searchBarOptions.searchBarIndexes.add(index);
+		}
+	}
+	resetLibraryDisplay();
+}
+
+function handleMobileSearch() {
+	hardResetFilterOptions();
+	searchBarOptions.isSearchActive = true;
+	let currentText = searchMobileInput.value.trim().toLowerCase();
+	for (const [index, book] of myLibrary.entries()) {
+		if (
+			(book.author.toLowerCase().includes(currentText) ||
+				book.title.toLowerCase().includes(currentText)) &&
+			!searchBarOptions.searchBarIndexes.has(index)
+		) {
+			searchBarOptions.searchBarIndexes.add(index);
+		}
+	}
+	searchMobileInput.value = '';
+	toggleMobileSearch();
+	resetLibraryDisplay();
+}
+
+function toggleMobileSearch() {
+	genreMainContainer.classList.toggle('hidden');
+	addBookButton.classList.toggle('hidden');
+	searchMobileInput.classList.toggle('hidden-search');
+	searchMobileSubmit.classList.toggle('hidden');
+	if (!searchMobileInput.className.includes('hidden-search')) {
+		searchMobileInput.focus();
 	}
 }
 
